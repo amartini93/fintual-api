@@ -1,0 +1,10 @@
+[
+    {
+        "user_id": "885ab3c1-957e-4c5b-9086-f8fa0196c4c0",
+        "name": "Aldo Martini",
+        "created_at": "2025-07-27T21:37:58.064082+00:00",
+        "updated_at": "2025-07-27T21:37:58.064082+00:00",
+        "balance": 10000.1,
+        "email": "test@test.cl"
+    }
+]

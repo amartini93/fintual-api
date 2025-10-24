@@ -1,0 +1,252 @@
+service: fintual-desafio
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: python3.10
+  timeout: 60
+  stage: ${self:custom.stage}
+  region: ${self:custom.region}
+  versionFunctions: false
+  deploymentMethod: direct
+  environment:
+    ${file(.env_config/${self:custom.stage}.env.json)}
+
+plugins: 
+  - serverless-dynamodb
+  - serverless-offline
+  - serverless-offline-sqs
+
+package:
+  patterns: #individually: true
+    - node_modules/**
+    - .venv/**
+    - venv/**
+
+custom:
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'us-west-2'}
+  dynamodb:
+    stages:
+      - dev
+    start:
+      port: 8000
+      inMemory: true
+      migrate: true
+      seed: true
+    seed:
+      domain:
+        sources:
+          - table: users
+            sources: [seeds/users.json]
+          - table: portfolios
+            sources: [seeds/portfolios.json]
+          - table: orders
+            sources: [seeds/orders.json]
+          - table: transactions
+            sources: [seeds/transactions.json]
+  serverless-offline-sqs:
+    autoCreate: true
+    apiVersion: '2012-11-05'
+    endpoint: http://localhost:9324
+    region: us-west-2
+    accessKeyId: root
+    secretAccessKey: root
+    skipCacheInvalidation: false
+
+functions:
+  # User
+  create_user:
+    handler: src/handlers/user_handler.create_user
+    events:
+      - http:
+          path: users
+          method: post
+  update_user:
+    handler: src/handlers/user_handler.update_user
+    events:
+      - http:
+          path: users/{user_id}
+          method: put
+  get_recent_orders:
+    handler: src/handlers/user_handler.get_recent_orders
+    events:
+      - http:
+          path: users/{user_id}/orders
+          method: get
+
+  # Portfolio
+  create_portfolio:
+    handler: src/handlers/portfolio_handler.create_portfolio
+    events:
+      - http:
+          path: portfolios
+          method: post
+  update_portfolio:
+    handler: src/handlers/portfolio_handler.update_portfolio
+    events:
+      - http:
+          path: portfolios/{portfolio_id}
+          method: put
+  portfolio_value:
+    handler: src/handlers/portfolio_handler.portfolio_value
+    events:
+      - http:
+          path: portfolios/{portfolio_id}/total
+          method: get
+  portfolio_rebalance:
+    handler: src/handlers/portfolio_handler.portfolio_rebalance
+    events:
+      - http:
+          path: portfolios/{portfolio_id}/rebalance
+          method: get
+  
+  # Transactions
+  create_investment:
+    handler: src/handlers/transactions_handler.create_transaction
+    events:
+      - http:
+          path: investments
+          method: post
+  process_transaction:
+    handler: src/handlers/transactions_handler.process_transaction
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - TransactionQueue
+              - Arn
+  
+  # Orders
+  create_order:
+    handler: src/handlers/orders_handler.create_order
+    events:
+      - http:
+          path: orders
+          method: post
+  process_order:
+    handler: src/handlers/orders_handler.process_order
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - OrderQueue
+              - Arn
+
+resources:
+  Resources:
+
+    # SQS Queues
+    TransactionQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: transactionQueue.fifo
+        FifoQueue: true
+        ContentBasedDeduplication: true
+    OrderQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: orderQueue.fifo
+        FifoQueue: true
+        ContentBasedDeduplication: true
+
+    # DynamoDB Tables
+    OrdersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: orders
+        AttributeDefinitions:
+          - AttributeName: order_id
+            AttributeType: S
+          - AttributeName: user_id
+            AttributeType: S
+          - AttributeName: portfolio_id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: order_id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        GlobalSecondaryIndexes:
+          - IndexName: UserIdIndex
+            KeySchema:
+              - AttributeName: user_id
+                KeyType: HASH
+            Projection:
+              ProjectionType: 'ALL'
+            ProvisionedThroughput: # Comment for stage test and prod, only use for local (dev)
+                ReadCapacityUnits: 1
+                WriteCapacityUnits: 1
+          - IndexName: PortfolioIdIndex
+            KeySchema:
+              - AttributeName: portfolio_id
+                KeyType: HASH
+            Projection:
+              ProjectionType: 'ALL'
+            ProvisionedThroughput: # Comment for stage test and prod, only use for local (dev)
+                ReadCapacityUnits: 1
+                WriteCapacityUnits: 1
+    TransactionsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: transactions
+        AttributeDefinitions:
+          - AttributeName: transaction_id
+            AttributeType: S
+          - AttributeName: user_id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: transaction_id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        GlobalSecondaryIndexes:
+          - IndexName: UserIdIndex
+            KeySchema:
+              - AttributeName: user_id
+                KeyType: HASH
+            Projection:
+              ProjectionType: 'ALL'
+            ProvisionedThroughput: # Comment for stage test and prod, only use for local (dev)
+                ReadCapacityUnits: 1
+                WriteCapacityUnits: 1
+    UsersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: users
+        AttributeDefinitions:
+          - AttributeName: user_id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: user_id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+    PortfoliosTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: portfolios
+        AttributeDefinitions:
+          - AttributeName: portfolio_id
+            AttributeType: S
+          - AttributeName: user_id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: portfolio_id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        GlobalSecondaryIndexes:
+          - IndexName: UserIdIndex
+            KeySchema:
+              - AttributeName: user_id
+                KeyType: HASH
+            Projection:
+              ProjectionType: 'ALL'
+            ProvisionedThroughput: # Comment for stage test and prod, only use for local (dev)
+                ReadCapacityUnits: 1
+                WriteCapacityUnits: 1

@@ -1,0 +1,14 @@
+{
+  "name": "fintual-desafio",
+  "version": "1.0.0",
+  "description": "Desafío técnico para Fintual",
+    "dependencies": {
+        "serverless": "^3",
+        "serverless-domain-manager": "^7.3.8"
+    },
+    "devDependencies": {
+        "serverless-dynamodb": "^0.2.54",
+        "serverless-offline": "^13.6.0",
+        "serverless-offline-sqs": "^8"
+    }
+}

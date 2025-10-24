@@ -1,0 +1,74 @@
+[
+    {
+        "order_id": "d5258d34-b732-4b17-aee3-10ed5db4d89b",
+        "user_id": "885ab3c1-957e-4c5b-9086-f8fa0196c4c0",
+        "portfolio_id": "c262234d-f80a-4015-9598-8f4c8de5806b",
+        "symbol": "AAPL",
+        "quantity": 1.5,
+        "price": 214.0,
+        "order_type": "buy_limit",
+        "created_at": "2025-07-28T02:11:22.990709+00:00",
+        "updated_at": "2025-07-28T02:11:28.324334+00:00",
+        "status": "COMPLETED"
+    },
+    {
+        "order_id": "16d9c646-204d-4242-a15e-2779c06ce037",
+        "user_id": "885ab3c1-957e-4c5b-9086-f8fa0196c4c0",
+        "portfolio_id": "c262234d-f80a-4015-9598-8f4c8de5806b",
+        "symbol": "AAPL",
+        "quantity": 5.0,
+        "price": 214.0,
+        "order_type": "buy_limit",
+        "created_at": "2025-07-28T02:12:28.707872+00:00",
+        "updated_at": "2025-07-28T02:12:33.737017+00:00",
+        "status": "COMPLETED"
+    },
+    {
+        "order_id": "251fee8c-9b02-4bcf-ab55-bd0895d1c202",
+        "user_id": "885ab3c1-957e-4c5b-9086-f8fa0196c4c0",
+        "portfolio_id": "c262234d-f80a-4015-9598-8f4c8de5806b",
+        "symbol": "AAPL",
+        "quantity": 15.0,
+        "price": 214.0,
+        "order_type": "sell_limit",
+        "created_at": "2025-07-28T02:13:07.815296+00:00",
+        "updated_at": "2025-07-28T02:13:12.847900+00:00",
+        "status": "FAILED"
+    },
+    {
+        "order_id": "4ca5716f-6525-4aa4-9784-b5d18b817136",
+        "user_id": "885ab3c1-957e-4c5b-9086-f8fa0196c4c0",
+        "portfolio_id": "c262234d-f80a-4015-9598-8f4c8de5806b",
+        "symbol": "AAPL",
+        "quantity": 3.0,
+        "price": 214.0,
+        "order_type": "sell_limit",
+        "created_at": "2025-07-28T02:13:33.092535+00:00",
+        "updated_at": "2025-07-28T02:13:38.116892+00:00",
+        "status": "COMPLETED"
+    },
+    {
+        "order_id": "f8fc1916-e0b2-4f95-bb9a-9a1e34f9b2b6",
+        "user_id": "885ab3c1-957e-4c5b-9086-f8fa0196c4c0",
+        "portfolio_id": "c262234d-f80a-4015-9598-8f4c8de5806b",
+        "symbol": "AAPL",
+        "quantity": 20.0,
+        "price": 230.5,
+        "order_type": "buy_limit",
+        "created_at": "2025-07-28T02:17:39.002134+00:00",
+        "updated_at": "2025-07-28T02:17:44.036762+00:00",
+        "status": "COMPLETED"
+    },
+    {
+        "order_id": "7a0e74b2-2796-43e8-aadd-fc330fb21a40",
+        "user_id": "885ab3c1-957e-4c5b-9086-f8fa0196c4c0",
+        "portfolio_id": "c262234d-f80a-4015-9598-8f4c8de5806b",
+        "symbol": "TSLA",
+        "quantity": 20.0,
+        "price": 316.06,
+        "order_type": "buy_limit",
+        "created_at": "2025-07-28T02:19:49.173641+00:00",
+        "updated_at": "2025-07-28T02:19:54.508387+00:00",
+        "status": "COMPLETED"
+    }
+]

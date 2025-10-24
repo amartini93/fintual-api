@@ -1,0 +1,38 @@
+# Python
+venv/
+.venv/
+.env_config/
+.env
+__pycache__/
+
+.conftest.py
+.pytest.ini
+.pytest_cache/
+
+# DynamoDB
+.dynamodb/
+dynamodb_local/
+
+# Visual studio code
+.vscode/
+
+# Node package directories
+node_modules
+
+# Environmente variables
+.env_config/
+
+# Serverless Framework directories
+.serverless
+
+# Others
+.DS_Store
+buckets/ 
+output/
+yarn.lock
+.npm
+.yarn
+Makefile
+
+tests/
+

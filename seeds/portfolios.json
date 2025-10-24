@@ -1,0 +1,23 @@
+[
+    {
+        "portfolio_id": "c262234d-f80a-4015-9598-8f4c8de5806b",
+        "user_id": "885ab3c1-957e-4c5b-9086-f8fa0196c4c0",
+        "created_at": "2025-07-27T22:03:07.731448+00:00",
+        "updated_at": "2025-07-27T22:03:07.731448+00:00",
+        "total_value": 0.0,
+        "stocks": {
+            "AAPL": {
+                "symbol": "AAPL",
+                "avg_price": "228.04255319148936",
+                "quantity": "3.5",
+                "current_price": null
+            },
+            "TSLA": {
+                "symbol": "TSLA",
+                "avg_price": "316.06",
+                "quantity": "20",
+                "current_price": null
+            }
+        }
+    }
+]
