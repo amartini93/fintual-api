@@ -6,6 +6,7 @@ import os
 from aws_lambda_powertools import Logger
 
 from models.user_models import User
+from services.brokerage_service import BrokerageService
 from services.user_service import UserService
 from utils.http_response import create_http_response
 
@@ -97,4 +98,36 @@ def get_recent_orders(event: dict, context) -> dict:
         )
     except Exception as e:
         logger.exception(f"Exception raised in handler.get_recent_orders: {e}")
+        return create_http_response(status_code=500, message="Internal server error")
+
+
+def onboard_user(event: dict, context) -> dict:
+    """
+    Handler function to onboard a user to Alpaca.
+    """
+    try:
+        logger.info(f"Received onboarding event: {event}")
+
+        user_id = event["pathParameters"].get("user_id")
+        if not user_id:
+            return create_http_response(status_code=400, message="Missing user_id in path")
+
+        # Optional KYC data from body
+        kyc_data = None
+        if event.get('body'):
+            kyc_data = json.loads(event.get('body')) if isinstance(event.get('body'), str) else event.get('body')
+
+        alpaca_account_id = BrokerageService.onboard_user(user_id, kyc_data)
+
+        if not alpaca_account_id:
+            return create_http_response(status_code=404, message="User not found or onboarding failed")
+
+        return create_http_response(
+            status_code=200,
+            message="User onboarded successfully",
+            data={"alpaca_account_id": alpaca_account_id}
+        )
+
+    except Exception as e:
+        logger.exception(f"Exception raised in handler.onboard_user: {e}")
         return create_http_response(status_code=500, message="Internal server error")

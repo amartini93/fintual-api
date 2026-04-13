@@ -74,6 +74,12 @@ functions:
       - http:
           path: users/{user_id}/orders
           method: get
+  onboard_user:
+    handler: src/handlers/user_handler.onboard_user
+    events:
+      - http:
+          path: users/{user_id}/onboard
+          method: post
 
   # Portfolio
   create_portfolio:

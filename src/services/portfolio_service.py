@@ -1,15 +1,16 @@
 from datetime import datetime, timezone
 from decimal import ROUND_HALF_UP, Decimal
-import os
 from typing import Dict
+import os
 
 from aws_lambda_powertools import Logger
 
+from clients.alpaca_client import AlpacaBrokerClient
 from exceptions.dynamodb_exceptions import DynamoDBItemNotFoundException
 from models.orders_models import Order, OrderStatus, OrderType
+from models.portfolio_models import Portfolio, StockPosition
 from repositories.orders_repository import OrderRepository
 from repositories.portfolio_repository import PortfolioRepository
-from models.portfolio_models import Portfolio, StockPosition
 from repositories.user_repository import UserRepository
 
 logger = Logger(service=os.getenv("AWS_LAMBDA_FUNCTION_NAME"))
@@ -133,6 +134,17 @@ class PortfolioService:
                 updates={"stocks": stocks_dict}
             )
 
+            # Alpaca Synchronization (Enabled/Disabled inside client)
+            if user.alpaca_account_id:
+                alpaca_client = AlpacaBrokerClient()
+                alpaca_client.place_limit_order(
+                    account_id=user.alpaca_account_id,
+                    symbol=symbol,
+                    qty=float(quantity),
+                    limit_price=float(price),
+                    side="BUY" if order.order_type == OrderType.BUY_LIMIT else "SELL"
+                )
+
             order.status = OrderStatus.COMPLETED
             OrderRepository._put_order(order)
             logger.info(f"Order {order.order_id} completed successfully")
@@ -148,19 +160,28 @@ class PortfolioService:
     def portfolio_value(cls, portfolio: Portfolio) -> Decimal:
         try:
             logger.info("Calculating portfolio value", portfolio_id=portfolio.portfolio_id)
-
             total_value = Decimal("0")
+
+            # Fetch real prices from Alpaca if enabled
+            alpaca_client = AlpacaBrokerClient()
+            symbols = list(portfolio.stocks.keys())
+            real_prices = alpaca_client.get_latest_prices(symbols) if symbols else {}
 
             for stock in portfolio.stocks.values():
                 quantity = Decimal(str(stock.quantity))
-                price = Decimal(str(stock.current_price)) if stock.current_price else Decimal(str(stock.avg_price))
+                # Use real price if available, fallback to current_price then avg_price
+                price = real_prices.get(stock.symbol)
+                if not price:
+                    price = Decimal(str(stock.current_price)) if stock.current_price else Decimal(str(stock.avg_price))
+                
                 total_value += quantity * price
                 logger.info(f"Stock {stock.symbol} value: {price}")
+            
             logger.info(f"Total portfolio value: {total_value}")
-            portfolio.total_value = total_value
+            portfolio.total_value = float(total_value)
             PortfolioRepository._update_portfolio(
                 portfolio.portfolio_id,
-                updates={"total_value": total_value}
+                updates={"total_value": Decimal(str(total_value))}
             )
 
             return total_value

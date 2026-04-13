@@ -1,6 +1,7 @@
 from decimal import Decimal
 from typing import Dict, Optional
 
+from clients.alpaca_client import AlpacaBrokerClient
 from pydantic import BaseModel, model_validator
 
 
@@ -12,6 +13,13 @@ class StockPosition(BaseModel):
 
     @classmethod
     def get_current_price(cls, symbol: str) -> Decimal:
+        alpaca_client = AlpacaBrokerClient()
+        
+        if alpaca_client.enabled:
+            prices = alpaca_client.get_latest_prices([symbol])
+            if symbol in prices:
+                return prices[symbol]
+
         mock_prices = {
             "AAPL": 262.82,
             "TSLA": 433.55,
@@ -23,7 +31,7 @@ class StockPosition(BaseModel):
             "SIVR": 46.85,
             "LEU": 383
         }
-        return Decimal(mock_prices.get(symbol, 0.0))
+        return Decimal(str(mock_prices.get(symbol, 0.0)))
 
     @model_validator(mode='before')
     def set_current_price(cls, values: dict) -> dict:

@@ -1,6 +1,6 @@
 from decimal import Decimal
-import json
 from typing import Any
+import json
 import os
 
 from aws_lambda_powertools import Logger

@@ -8,6 +8,7 @@ class User(BaseModel):
     created_at: str
     updated_at: str
     balance: float = Field(0.0, description="Total user account balance in USD.")
+    alpaca_account_id: str | None = Field(None, description="The ID of the associated Alpaca account.")
 
     class Config:
         from_attributes = True
